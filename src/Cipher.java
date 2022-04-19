@@ -111,7 +111,8 @@ public class Cipher extends Frame{
 		tfCipherKey.setFont(new Font("나눔고딕 ExtraBold", 0, 12));
 		tfText.setFont(new Font("나눔고딕 ExtraBold", 0, 12));
 		tfRes.setFont(new Font("나눔고딕 ExtraBold", 0, 12));
-		tfRes.setEnabled(false);
+		tfRes.setBackground(Color.white);
+		tfRes.setEditable(false);
 		
 		JLabel lb2 = new JLabel("암호판", JLabel.CENTER);
 		lb2.setFont(new Font("나눔고딕 ExtraBold", 0, 18));
@@ -128,12 +129,17 @@ public class Cipher extends Frame{
 		mainPane.add(btnEncryption);
 		
 		addAction();
-		
 	}	
 	
 	boolean check() {
-		if(tfCipherKey.getText().isBlank()|| tfText.getText().isBlank()) {
+		if(tfCipherKey.getText().isBlank()) {
 			JOptionPane.showMessageDialog(null, "빈칸이 존재합니다.", "경고", JOptionPane.ERROR_MESSAGE);
+			tfCipherKey.grabFocus();
+			return false;
+		}
+		if(tfText.getText().isBlank()) {
+			JOptionPane.showMessageDialog(null, "빈칸이 존재합니다.", "경고", JOptionPane.ERROR_MESSAGE);
+			tfText.grabFocus();
 			return false;
 		}
 		String cipher = tfCipherKey.getText().trim().replace(" ", "");
@@ -211,7 +217,7 @@ public class Cipher extends Frame{
 
 		int arrTextIdx = 0;
 		int textLen = text.length();
-		for (int i = 0; i < textLen;) {
+		for (int i = 0; i < text.length();) {
 			arrText[arrTextIdx][0] = text.charAt(i); i++; 
 			if(i+(textLen - text.length()) == textLen && textLen%2 == 1) {
 				arrText[arrTextIdx][1] = 'x';
@@ -362,6 +368,11 @@ public class Cipher extends Frame{
 			
 		});
 		btnDecryption.addActionListener(e->{
+			if(tfText.getText().replace(" ", "").length()%2!=0) {
+				JOptionPane.showMessageDialog(null, "암호문의 길이는 짝수로 이루어져 있습니다.", "경고", JOptionPane.ERROR_MESSAGE);
+				tfText.grabFocus();
+				return;
+			}
 			if(check()){
 				createCipherPlate();
 				startDecryption();
