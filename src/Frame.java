@@ -10,12 +10,13 @@ public class Frame extends JFrame{
 	
 	JPanel mainPane = new JPanel();
 	
-	public Frame(int w, int h) {
-		setSize(w, h);
+	public Frame() {
+		setTitle("3201");
+		setSize(900, 580);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setLocationRelativeTo(null);
-		setUndecorated(true);
-		//setResizable(false);
+		//setUndecorated(true);
+		setResizable(false);
 		add(mainPane);
 		mainPane.setBackground(new Color(195, 215, 255));
 		mainPane.setLayout(null);

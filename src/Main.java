@@ -23,7 +23,6 @@ public class Main extends Frame{
 	RoundedButton btnStudy = new RoundedButton("암호화 공부하기");
 	RoundedButton btnCipher = new RoundedButton("암호화/복호화");
 	public Main() {
-		super(900, 550);
 		
 		lb.setFont(new Font("나눔고딕 ExtraBold", 0, 30));
 		lb.setBounds(300, 100, 500, 100);

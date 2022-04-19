@@ -44,7 +44,6 @@ public class Cipher extends Frame{
 		new JLabel("결과", JLabel.RIGHT)
 	};
 	public Cipher() {
-		super(900, 550);
 
 		btnEncryption.setFont(new Font("나눔고딕 ExtraBold", 0, 20));
 		btnDecryption.setFont(new Font("나눔고딕 ExtraBold", 0, 20));
@@ -133,78 +132,86 @@ public class Cipher extends Frame{
 	}	
 	
 	boolean check() {
-		if(tfCipherKey.getText().length() == 0 || tfText.getText().length() == 0) {
+		if(tfCipherKey.getText().isBlank()|| tfText.getText().isBlank()) {
 			JOptionPane.showMessageDialog(null, "빈칸이 존재합니다.", "경고", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
-		
+		String cipher = tfCipherKey.getText().trim().replace(" ", "");
+		String text = tfText.getText().trim().replace(" ", "");
 		//이부분 잘 안됨
-		if(!tfCipherKey.getText().matches("(.*)[a-zA-Z](.*)")) {
+		if(cipher.matches(".*[^a-zA-Z].*")) {
 			tfCipherKey.setText("");
 			tfCipherKey.grabFocus();
 		}
-		if(!tfText.getText().matches("(.*)[a-zA-Z](.*)")) {
+		if(text.matches("(.*)[^a-zA-Z](.*)")) {
 			tfText.setText("");
 			tfText.grabFocus();
 		}
-		if(!tfCipherKey.getText().matches("(.*)[a-zA-Z](.*)")||!tfText.getText().matches("(.*)[a-zA-Z](.*)")) {
+		if(cipher.matches(".*[^a-zA-Z].*")||text.matches("(.*)[^a-zA-Z](.*)")) {
 			JOptionPane.showMessageDialog(null, "영문자만 입력해 주시길 바랍니다.", "경고", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
 		return true;
 	}
 	
-	void startCipher() {
+	void createCipherPlate() {
+		//암호키의 중복을 지운다.
+		//asintor
+		//지우고 앞에서부터 순서를 메긴다.
+		//arrAlpha를 돌면서 아직 순서가 안 메겨진 곳의 순서를 메긴다.
+		String cipherKey = tfCipherKey.getText();
+		int arrAlphaIdx = 0;
+		Arrays.fill(arrAlpha, 0);
+		Arrays.fill(arrAlphaChk, false);
+		
+		cipherKey = cipherKey.toLowerCase(); //소문자로 바꾸기
+		cipherKey = cipherKey.trim();
+		cipherKey = cipherKey.replace(" ", "");
+		//암호키 중복 없이 넣기
+		for (int i = 0; i < cipherKey.length(); i++) {
+			char alpha = cipherKey.charAt(i);
+			if(arrAlpha[arrAlphaIdx] == 0&&!arrAlphaChk[(alpha-'a')]) {
+				if(alpha=='z'||alpha=='q') {
+					alpha = 'q';
+				}
+				arrAlpha[arrAlphaIdx] = (alpha-'a'+1);
+				arrAlphaChk[(alpha-'a')] = true;
+				tfAlphaList[arrAlphaIdx].setText(Character.toString(alpha));
+				if(tfAlphaList[arrAlphaIdx].getText().equals("q")) {
+					tfAlphaList[arrAlphaIdx].setText("q/z");
+				}
+				System.out.println();
+				arrAlphaIdx++;
+			}
+		}
+		//for end
+		
+		//25개까지만
+		
+		for (int i = 0; i < arrAlpha.length; i++) {
+			if(!arrAlphaChk[i]) {
+				arrAlpha[arrAlphaIdx] = i+1;
+				arrAlphaChk[i] = true;
+				tfAlphaList[arrAlphaIdx].setText(Character.toString((char)('a'+arrAlpha[arrAlphaIdx]-1)));
+				if(tfAlphaList[arrAlphaIdx].getText().equals("q")) {
+					tfAlphaList[arrAlphaIdx].setText("q/z");
+				}
+				arrAlphaIdx++;
+			}
+		}
+	}
+	
+	void startEncryption() {
 		String text = tfText.getText().trim();
 		text = text.replace(" ", ""); //공백 제거
 		text = text.toLowerCase(); //모두 소문자로 처리
 		
-		/*
-			행끼리 : 아래
-			열끼리 : 오른
-			둘 다 X : 대각선
-			
-			중복 : x로
-			q/z중에서는 더 빠른 q로
-		*/
-		
-		//암호화/복호화
-		
-		/*
-		 
-		 //배열
-		 평문을 2개씩 묶어서 배열한다.
-		 묶인 2개의 영문자가 같다면 2번째 문자를 'X'로 넣고 같은 S를 다음으로 넘겨준다. (여기서 바꿔줄 문자인 X는 다른 문자로도 가능하다.)
-		 마지막에 글자가 1개가 남게 되어도 'X'를 뒤에 넣어준다.
-		 
-		 //치환
-		 (암호판은 1차원 배열.) -- 두 개의 문자가 
-		 	x/5 == a/5  :  열이 같다.
-		 	x%5 == a%5  :  행이 같다.
-		 	위에 둘 다 아니다 : 대각선이다.
-		 	
-		 	열이 같은 경우 : 순서대로 자기 인덱스 + 1(+1이 5이상이면 0으로)
-		 	행이 같은 경우 : 순서대로 자기 인덱스 + 5(+5가 5이상이면 (자기 인덱스%5))
-		 	대각선인 경우 : 각 행과 열을 구한다. 행이 더 작으면 자기 인덱스 + 5, 행이 더 크면 자기 인덱스 - 5
-		 	만약 Q/Z라면 Q로 함.
-		 	(행 : 인덱스/5, 열 : 인덱스%5)
-		 
-		 * */
-		
+		//암호화
 		char[][] arrText = new char[1000000][2];//2,000,000글자
-		
-		/*
-		 
-		 //배열
-		 평문을 2개씩 묶어서 배열한다.
-		 묶인 2개의 영문자가 같다면 2번째 문자를 'X'로 넣고 같은 문자를 다음으로 넘겨준다. (여기서 바꿔줄 문자인 X는 다른 문자로도 가능하다.)
-		 마지막에 글자가 1개가 남게 되어도 'X'를 뒤에 넣어준다.
-		*/
 
 		int arrTextIdx = 0;
 		int textLen = text.length();
 		for (int i = 0; i < text.length();) {
-			System.out.println(arrTextIdx);
 			arrText[arrTextIdx][0] = text.charAt(i); i++; 
 			if(i+(textLen - text.length()) == textLen && textLen%2 == 1) {
 				arrText[arrTextIdx][1] = 'x';
@@ -220,45 +227,23 @@ public class Cipher extends Frame{
 			}
 			//xx라면..?
 			//xxxx가 된다..... //issue
-			
 			arrTextIdx++;
 		}
 		
-		//출력 TEST
 		String changeText = "";
 		for (int i = 0; i < arrTextIdx; i++) {
-			System.out.print(arrText[i][0]+""+arrText[i][1]+" ");
 			changeText+=arrText[i][0];
 			changeText+=arrText[i][1];
 			changeText+=" ";
 		}
-		tfText.setText(changeText);
-		//for end
+
 		
-		/*
-		 //치환
-		 (암호판은 1차원 배열.) -- 두 개의 문자가 
-		 	x/5 == a/5  :  열이 같다.
-		 	x%5 == a%5  :  행이 같다.
-		 	위에 둘 다 아니다 : 대각선이다.
-		 	
-		 	열이 같은 경우 : 순서대로 자기 인덱스 + 1(+1이 5이상이면 0으로)
-		 	행이 같은 경우 : 순서대로 자기 인덱스 + 5(+5가 25이상이면 (자기 인덱스%5))
-		 	대각선인 경우 : 각 행과 구한다. ---- 더 생각
-		 	 행이 더 작으면 자기 인덱스 + 5, 행이 더 크면 자기 인덱스 - 5
-		 	만약 Q/Z라면 Q로 함.
-		 	(행 : 인덱스/5, 열 : 인덱스%5)
-		 	
-		 * */
 		char[][] arrRes = new char[1000000][2];//2,000,000글자까지
 		ArrayList<Integer> arrAlphaTemp = new ArrayList<>();
 		for (int i = 0; i < arrAlpha.length; i++) {
 			Arrays.stream(arrAlpha).forEach(a-> arrAlphaTemp.add(Integer.valueOf(a)));
-			//(char)(arrAlphaTemp.get(0)+'a'-1)
 		}
 		for (int i = 0; i < arrTextIdx; i++) {
-			//arrAlpha의 문자가 있는 index를 찾는다.
-			//if( arrAlpha[] )
 			int firstIdx = arrAlphaTemp.indexOf(arrText[i][0]-'a'+1);
 			int secondIdx = arrAlphaTemp.indexOf(arrText[i][1]-'a'+1);
 			int nextFIdx = -1;
@@ -289,81 +274,103 @@ public class Cipher extends Frame{
 		
 		tfRes.setText(res);
 		
-		//암호화/복호화 END
+		//암호화 END
+	}
+	
+	void startDecryption() {
+		String text = tfText.getText().trim();
+		text = text.replace(" ", ""); //공백 제거
+		text = text.toLowerCase(); //모두 소문자로 처리
+		
+		//복호화
+		char[][] arrText = new char[1000000][2];//2,000,000글자
+
+		int arrTextIdx = 0;
+		int textLen = text.length();
+		for (int i = 0; i < text.length();) {
+			arrText[arrTextIdx][0] = text.charAt(i); i++; 
+			if(arrText[arrTextIdx][1] == 'x') {
+				//arrText[arrTextIdx][1]
+			}else {
+				arrText[arrTextIdx][1] = text.charAt(i);
+			}
+			i++;
+			//같다면
+			if(arrText[arrTextIdx][0]==arrText[arrTextIdx][1]) {
+				arrText[arrTextIdx][1] = 'x';
+				textLen++;
+				i--;
+			}
+			//xx라면..?
+			//xxxx가 된다..... //issue
+			arrTextIdx++;
+		}
+		
+		String changeText = "";
+		for (int i = 0; i < arrTextIdx; i++) {
+			System.out.print(arrText[i][0]+""+arrText[i][1]+" ");
+			changeText+=arrText[i][0];
+			changeText+=arrText[i][1];
+			changeText+=" ";
+		}
+		
+		char[][] arrRes = new char[1000000][2];//2,000,000글자까지
+		ArrayList<Integer> arrAlphaTemp = new ArrayList<>();
+		for (int i = 0; i < arrAlpha.length; i++) {
+			Arrays.stream(arrAlpha).forEach(a-> arrAlphaTemp.add(Integer.valueOf(a)));
+		}
+		for (int i = 0; i < arrTextIdx; i++) {
+			int firstIdx = arrAlphaTemp.indexOf(arrText[i][0]-'a'+1);
+			int secondIdx = arrAlphaTemp.indexOf(arrText[i][1]-'a'+1);
+			int nextFIdx = -1;
+			int nextSIdx = -1;
+			if(firstIdx/5 == secondIdx/5 ) { //열이 같다.
+				nextFIdx = (firstIdx%5+1)>=5?0:firstIdx+1;
+				nextSIdx = (secondIdx%5+1)>=5?0:secondIdx+1;
+			}else if(firstIdx%5 == secondIdx%5 ) { //행이 같다.
+				nextFIdx = (firstIdx+5)>=25?(firstIdx%5):firstIdx+5;
+				nextSIdx = (secondIdx+5)>=25?(secondIdx%5):secondIdx+5;
+			}else { //대각선
+				int fRow = firstIdx/5, sRow = secondIdx/5;
+				int fCol = firstIdx%5, sCol = secondIdx%5;
+				//열은 자기 열인데 행은 남의 행
+				nextFIdx = sRow*5+fCol;
+				nextSIdx = fRow*5+sCol;
+			}
+			arrRes[i][0] = (char)(arrAlphaTemp.get(nextFIdx)+'a'-1);
+			arrRes[i][1] = (char)(arrAlphaTemp.get(nextSIdx)+'a'-1);
+		}
+
+		String res = "";
+		for (int i = 0; i < arrTextIdx; i++) {
+			res+=arrRes[i][0];
+			res+=arrRes[i][1];
+			res+=" ";
+		}
+		
+		tfRes.setText(res);
+		
+		//복호화 END
 	}
 	
 	void addAction() {
 		btnBack.addActionListener(e->{
-			System.exit(0);
-//			dispose();
-//			new Main().setVisible(true);
+			dispose();
+			new Main().setVisible(true);
 		});
 		
 		btnEncryption.addActionListener(e->{
 			if(check()) {
-				//암호키의 중복을 지운다.
-				//asintor
-				//지우고 앞에서부터 순서를 메긴다.
-				//arrAlpha를 돌면서 아직 순서가 안 메겨진 곳의 순서를 메긴다.
-				String cipherKey = tfCipherKey.getText();
-				int arrAlphaIdx = 0;
-				Arrays.fill(arrAlpha, 0);
-				Arrays.fill(arrAlphaChk, false);
-				
-				cipherKey = cipherKey.toLowerCase(); //소문자로 바꾸기
-				cipherKey = cipherKey.trim();
-				cipherKey = cipherKey.replace(" ", "");
-				//암호키 중복 없이 넣기
-				System.out.println(cipherKey);
-				for (int i = 0; i < cipherKey.length(); i++) {
-					char alpha = cipherKey.charAt(i);
-					if(arrAlpha[arrAlphaIdx] == 0&&!arrAlphaChk[(alpha-'a')]) {
-						arrAlpha[arrAlphaIdx] = (alpha-'a'+1);
-						arrAlphaChk[(alpha-'a')] = true;
-						switch(alpha) {
-						case 'z' : arrAlphaChk[('q'-'a')]= true; break;
-						case 'q' : arrAlphaChk[('z'-'a')]= true; break;
-						}
-						tfAlphaList[arrAlphaIdx].setText(Character.toString((char)('a'+arrAlpha[arrAlphaIdx]-1)));
-						if(tfAlphaList[arrAlphaIdx].getText().equals("q")||
-								tfAlphaList[arrAlphaIdx].getText().equals("z")) {
-							tfAlphaList[arrAlphaIdx].setText("q/z");
-						}
-						System.out.println();
-						arrAlphaIdx++;
-					}
-				}
-				//for end
-				
-				//25개까지만
-				
-				for (int i = 0; i < arrAlpha.length; i++) {
-					if(!arrAlphaChk[i]) {
-						if(i == 'q'-'a') {
-							arrAlphaChk[('z'-'a')]= true;
-						}else if(i == 'z'-'a') {
-							arrAlphaChk[('q'-'a')]= true;
-						}
-						arrAlpha[arrAlphaIdx] = i+1;
-						arrAlphaChk[i] = true;
-						tfAlphaList[arrAlphaIdx].setText(Character.toString((char)('a'+arrAlpha[arrAlphaIdx]-1)));
-						if(tfAlphaList[arrAlphaIdx].getText().equals("q")||
-								tfAlphaList[arrAlphaIdx].getText().equals("z")) {
-							tfAlphaList[arrAlphaIdx].setText("q/z");
-						}
-						arrAlphaIdx++;
-					}
-				}
-				
-				
-				startCipher();
+				createCipherPlate();
+				startEncryption();
 				
 			}
 			
 		});
 		btnDecryption.addActionListener(e->{
 			if(check()){
-				
+				createCipherPlate();
+				startDecryption();
 			}
 		});
 		
