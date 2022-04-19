@@ -211,7 +211,7 @@ public class Cipher extends Frame{
 
 		int arrTextIdx = 0;
 		int textLen = text.length();
-		for (int i = 0; i < text.length();) {
+		for (int i = 0; i < textLen;) {
 			arrText[arrTextIdx][0] = text.charAt(i); i++; 
 			if(i+(textLen - text.length()) == textLen && textLen%2 == 1) {
 				arrText[arrTextIdx][1] = 'x';
@@ -283,53 +283,38 @@ public class Cipher extends Frame{
 		text = text.toLowerCase(); //모두 소문자로 처리
 		
 		//복호화
-		char[][] arrText = new char[1000000][2];//2,000,000글자
+		
+		//arrText에 치환해서 넣음
+		ArrayList<char[]> arrText = new ArrayList<>(); //arrayList사용
 
-		int arrTextIdx = 0;
-		int textLen = text.length();
-		for (int i = 0; i < text.length();) {
-			arrText[arrTextIdx][0] = text.charAt(i); i++; 
-			if(arrText[arrTextIdx][1] == 'x') {
-				//arrText[arrTextIdx][1]
-			}else {
-				arrText[arrTextIdx][1] = text.charAt(i);
-			}
-			i++;
-			//같다면
-			if(arrText[arrTextIdx][0]==arrText[arrTextIdx][1]) {
-				arrText[arrTextIdx][1] = 'x';
-				textLen++;
-				i--;
-			}
-			//xx라면..?
-			//xxxx가 된다..... //issue
-			arrTextIdx++;
+		//처음 문자들 세팅
+		for (int i = 0; i < text.length(); i+=2) {
+			char[] t = new char[2];
+			t[0] = text.charAt(i);
+			t[1] = text.charAt(i+1);
+			arrText.add(t);
 		}
 		
-		String changeText = "";
-		for (int i = 0; i < arrTextIdx; i++) {
-			System.out.print(arrText[i][0]+""+arrText[i][1]+" ");
-			changeText+=arrText[i][0];
-			changeText+=arrText[i][1];
-			changeText+=" ";
-		}
-		
-		char[][] arrRes = new char[1000000][2];//2,000,000글자까지
+		//arrAlphaTemp는 암호판의 영문자들이 문자-'a'+1로 저장돼있음
 		ArrayList<Integer> arrAlphaTemp = new ArrayList<>();
 		for (int i = 0; i < arrAlpha.length; i++) {
 			Arrays.stream(arrAlpha).forEach(a-> arrAlphaTemp.add(Integer.valueOf(a)));
 		}
-		for (int i = 0; i < arrTextIdx; i++) {
-			int firstIdx = arrAlphaTemp.indexOf(arrText[i][0]-'a'+1);
-			int secondIdx = arrAlphaTemp.indexOf(arrText[i][1]-'a'+1);
+		for (int i = 0; i < arrText.size(); i++) {
+			//치환
+			//암호판의 문자들은 arrAlphaTemp에 문자-'a'+1로 저장돼있음
+			int firstIdx = arrAlphaTemp.indexOf(arrText.get(i)[0]-'a'+1);
+			int secondIdx = arrAlphaTemp.indexOf(arrText.get(i)[1]-'a'+1);
+			
 			int nextFIdx = -1;
 			int nextSIdx = -1;
+
 			if(firstIdx/5 == secondIdx/5 ) { //열이 같다.
-				nextFIdx = (firstIdx%5+1)>=5?0:firstIdx+1;
-				nextSIdx = (secondIdx%5+1)>=5?0:secondIdx+1;
+				nextFIdx = (firstIdx%5-1)<0?4:firstIdx-1;
+				nextSIdx = (secondIdx%5-1)<0?4:secondIdx-1;
 			}else if(firstIdx%5 == secondIdx%5 ) { //행이 같다.
-				nextFIdx = (firstIdx+5)>=25?(firstIdx%5):firstIdx+5;
-				nextSIdx = (secondIdx+5)>=25?(secondIdx%5):secondIdx+5;
+				nextFIdx = (firstIdx-5)<0?(3+firstIdx%5):firstIdx-5;
+				nextSIdx = (secondIdx-5)<0?(3+secondIdx%5):secondIdx-5;
 			}else { //대각선
 				int fRow = firstIdx/5, sRow = secondIdx/5;
 				int fCol = firstIdx%5, sCol = secondIdx%5;
@@ -337,19 +322,28 @@ public class Cipher extends Frame{
 				nextFIdx = sRow*5+fCol;
 				nextSIdx = fRow*5+sCol;
 			}
-			arrRes[i][0] = (char)(arrAlphaTemp.get(nextFIdx)+'a'-1);
-			arrRes[i][1] = (char)(arrAlphaTemp.get(nextSIdx)+'a'-1);
+			
+			arrText.set(i, new char[] {
+					(char)(arrAlphaTemp.get(nextFIdx)+'a'-1),
+					(char)(arrAlphaTemp.get(nextSIdx)+'a'-1)
+				});
 		}
-
+		
 		String res = "";
-		for (int i = 0; i < arrTextIdx; i++) {
-			res+=arrRes[i][0];
-			res+=arrRes[i][1];
-			res+=" ";
+		for(int i = 0; i < arrText.size(); i++) {
+			if(i != arrText.size()-1 && 
+					arrText.get(i)[1]== 'x' && 
+					arrText.get(i)[0]==arrText.get(i+1)[0]) {
+				res+=arrText.get(i)[0];
+			}else {
+				res+=arrText.get(i)[0];
+				res+=arrText.get(i)[1];
+			}
 		}
+		
+		//마지막 x 처리, 띄어쓰기 처리 ......
 		
 		tfRes.setText(res);
-		
 		//복호화 END
 	}
 	
