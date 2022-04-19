@@ -224,6 +224,8 @@ public class Cipher extends Frame{
 			}else {
 				arrText[arrTextIdx][1] = text.charAt(i);
 			}
+			if(arrText[arrTextIdx][0]=='z') { arrText[arrTextIdx][0] = 'q'; }
+			if(arrText[arrTextIdx][1]=='z') { arrText[arrTextIdx][1] = 'q'; }
 			i++;
 			//같다면
 			if(arrText[arrTextIdx][0]==arrText[arrTextIdx][1]) {
@@ -234,13 +236,6 @@ public class Cipher extends Frame{
 			//xx라면..?
 			//xxxx가 된다..... //issue
 			arrTextIdx++;
-		}
-		
-		String changeText = "";
-		for (int i = 0; i < arrTextIdx; i++) {
-			changeText+=arrText[i][0];
-			changeText+=arrText[i][1];
-			changeText+=" ";
 		}
 
 		
@@ -314,7 +309,6 @@ public class Cipher extends Frame{
 			
 			int nextFIdx = -1;
 			int nextSIdx = -1;
-
 			if(firstIdx/5 == secondIdx/5 ) { //열이 같다.
 				nextFIdx = (firstIdx%5-1)<0?4:firstIdx-1;
 				nextSIdx = (secondIdx%5-1)<0?4:secondIdx-1;
