@@ -43,9 +43,7 @@ public class Main extends Frame{
 		mainPane.add(btnClose);
 		mainPane.add(btnStudy);
 		mainPane.add(btnCipher);
-		
 		addAction();
-		
 	}	
 	
 	void addAction() {

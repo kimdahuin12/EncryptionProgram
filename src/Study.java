@@ -24,7 +24,7 @@ public class Study extends Frame{
 	public Study() {
 		
 		lb.setFont(new Font("나눔고딕 ExtraBold", 1, 30));
-		lb.setBounds(300, 30, 500, 100);
+		lb.setBounds(270, 30, 500, 100);
 		lb.setBackground(new Color(0, 0, 0, 255));
 		
 		lbContent.setVerticalAlignment(JLabel.TOP);
