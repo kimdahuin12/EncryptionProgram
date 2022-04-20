@@ -45,6 +45,10 @@ public class Cipher extends Frame{
 		new JLabel("평문/암호문", JLabel.RIGHT),	
 		new JLabel("결과", JLabel.RIGHT)
 	};
+	String encryption = "";
+	String decryption = "";
+	String blank = "";
+	String zChk = "";
 	public Cipher() {
 
 		btnEncryption.setFont(new Font("나눔고딕 ExtraBold", 0, 20));
@@ -55,6 +59,11 @@ public class Cipher extends Frame{
 		lb.setFont(new Font("나눔고딕 ExtraBold", 0, 30));
 		lb.setBounds(350, 10, 500, 100);
 		lb.setBackground(new Color(0, 0, 0, 255));
+		
+		//암호화 -> 복호화 ->
+		
+		//blank스트링 이용하여 띄어쓰기
+		//zChk 스트링 이용하여 q인 곳의 z를 바꿔줌.
 		
 		Image img;
 		try {
@@ -68,7 +77,6 @@ public class Cipher extends Frame{
 		}
 		
 		btnBack.setBounds(800, 50, 50, 50);
-		
 		//암호판 디자인
 		paneCipherPlate.setBackground(Color.white);
 		for (int i = 0; i < tfAlphaList.length; i++) {
@@ -209,9 +217,21 @@ public class Cipher extends Frame{
 		}
 	}
 	
-	void startEncryption() {
+	String startEncryption() {
 		String text = tfText.getText().trim();
-		text = text.replace(" ", ""); //공백 제거
+		blank = "";
+		zChk = "";
+		
+		for (int i = 0; i < text.length(); i++) {
+			if(text.charAt(i)==' ') {
+				blank+=1;
+			}else {
+				blank+=0;
+			}
+			if(text.charAt(i)=='z') {zChk+=1; }
+			else { zChk+=0; }
+		}
+		text = text.replace(" ", "");
 		text = text.toLowerCase(); //모두 소문자로 처리
 		
 		//암호화
@@ -226,7 +246,7 @@ public class Cipher extends Frame{
 			}else {
 				arrText[arrTextIdx][1] = text.charAt(i);
 			}
-			if(arrText[arrTextIdx][0]=='z') { arrText[arrTextIdx][0] = 'q'; }
+			if(arrText[arrTextIdx][0]=='z') { arrText[arrTextIdx][0] = 'q';}
 			if(arrText[arrTextIdx][1]=='z') { arrText[arrTextIdx][1] = 'q'; }
 			i++;
 			//같다면
@@ -247,13 +267,14 @@ public class Cipher extends Frame{
 			Arrays.stream(arrAlpha).forEach(a-> arrAlphaTemp.add(Integer.valueOf(a)));
 		}
 		for (int i = 0; i < arrTextIdx; i++) {
+			System.out.println(arrText[i][0]+""+arrText[i][1]);
 			int firstIdx = arrAlphaTemp.indexOf(arrText[i][0]-'a'+1);
 			int secondIdx = arrAlphaTemp.indexOf(arrText[i][1]-'a'+1);
 			int nextFIdx = -1;
 			int nextSIdx = -1;
 			if(firstIdx/5 == secondIdx/5 ) { //열이 같다.
-				nextFIdx = (firstIdx%5+1)>=5?0:firstIdx+1;
-				nextSIdx = (secondIdx%5+1)>=5?0:secondIdx+1;
+				nextFIdx = (firstIdx%5+1)>=5?firstIdx-4:firstIdx+1;
+				nextSIdx = (secondIdx%5+1)>=5?secondIdx-4:secondIdx+1;
 			}else if(firstIdx%5 == secondIdx%5 ) { //행이 같다.
 				nextFIdx = (firstIdx+5)>=25?(firstIdx%5):firstIdx+5;
 				nextSIdx = (secondIdx+5)>=25?(secondIdx%5):secondIdx+5;
@@ -276,12 +297,12 @@ public class Cipher extends Frame{
 		}
 		
 		tfRes.setText(res);
-		
+		return res;
 		//암호화 END
 	}
 	
-	void startDecryption() {
-		String text = tfText.getText().trim();
+	String startDecryption() {
+		String text = encryption.trim();
 		text = text.replace(" ", ""); //공백 제거
 		text = text.toLowerCase(); //모두 소문자로 처리
 		
@@ -312,8 +333,8 @@ public class Cipher extends Frame{
 			int nextFIdx = -1;
 			int nextSIdx = -1;
 			if(firstIdx/5 == secondIdx/5 ) { //열이 같다.
-				nextFIdx = (firstIdx%5-1)<0?4:firstIdx-1;
-				nextSIdx = (secondIdx%5-1)<0?4:secondIdx-1;
+				nextFIdx = (firstIdx%5-1)<0?firstIdx+4:firstIdx-1;
+				nextSIdx = (secondIdx%5-1)<0?firstIdx+4:secondIdx-1;
 			}else if(firstIdx%5 == secondIdx%5 ) { //행이 같다.
 				nextFIdx = (firstIdx-5)<0?(3+firstIdx%5):firstIdx-5;
 				nextSIdx = (secondIdx-5)<0?(3+secondIdx%5):secondIdx-5;
@@ -331,21 +352,40 @@ public class Cipher extends Frame{
 				});
 		}
 		
-		String res = "";
+		String resT = "";
 		for(int i = 0; i < arrText.size(); i++) {
 			if(i != arrText.size()-1 && 
 					arrText.get(i)[1]== 'x' && 
 					arrText.get(i)[0]==arrText.get(i+1)[0]) {
-				res+=arrText.get(i)[0];
+				resT+=arrText.get(i)[0];
 			}else {
-				res+=arrText.get(i)[0];
-				res+=arrText.get(i)[1];
+				resT+=arrText.get(i)[0];
+				resT+=arrText.get(i)[1];
+			}
+		}
+		
+		String res = "";
+		int bResIdx = 0;
+		int zResIdx = 0;
+		System.out.println(blank);
+		System.out.println(resT);
+		for (int i = 0; i < blank.length(); i++) {
+			if(blank.charAt(i)=='0') {
+				res+= resT.charAt(bResIdx);
+				bResIdx++;
+			}else { //1. 띄어쓰기
+				res+=" ";
+			}
+			if(i!=zChk.length()-1 && zChk.charAt(i)=='1'&&res.charAt(i)=='q') {
+				res = res.substring(0, i);
+				res+='z';
 			}
 		}
 		
 		//마지막 x 처리, 띄어쓰기 처리 ......
 		
 		tfRes.setText(res);
+		return res;
 		//복호화 END
 	}
 	
@@ -358,23 +398,15 @@ public class Cipher extends Frame{
 		btnEncryption.addActionListener(e->{
 			if(check()) {
 				createCipherPlate();
-				startEncryption();
-				
+				encryption = startEncryption();
 			}
-			
 		});
 		btnDecryption.addActionListener(e->{
-			if(tfText.getText().replace(" ", "").length()%2!=0) {
-				JOptionPane.showMessageDialog(null, "암호문의 길이는 짝수로 이루어져 있습니다.", "경고", JOptionPane.ERROR_MESSAGE);
-				tfText.grabFocus();
-				return;
-			}
 			if(check()){
 				createCipherPlate();
-				startDecryption();
+				decryption = startDecryption();
 			}
 		});
-		
 	}
 	
 	public static void main(String[] args) {
