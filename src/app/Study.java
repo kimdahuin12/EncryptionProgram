@@ -20,7 +20,7 @@ import javax.swing.JPanel;
 
 public class Study extends Frame{
 	
-	JLabel lb = new JLabel("다중 문자 치환 암호화란?");
+	JLabel lb = new JLabel("대칭키 암호화란?");
 	JLabel lbContent = new JLabel("", JLabel.CENTER);
 	JButton btnBack = new JButton();
 	public Study() {
@@ -33,7 +33,7 @@ public class Study extends Frame{
 		lbContent.setHorizontalAlignment(JLabel.CENTER);
 		lbContent.setFont(new Font("나눔고딕 ExtraBold", 0, 15));
 		lbContent.setText("<html>"
-				+ "다중 문자 치환 암호화는 2개 이상의 문자열을 묶어 치환하는 방법입니다.<br>"
+				+ "대칭키 암호화는 2개 이상의 문자열을 묶어 치환하는 방법입니다.<br>"
 				+ "암호키를 5 x 5 정사각형에 배열하고 한 번에 두글자씩 암호화합니다.<br>"
 				+ "<br>"
 				+ "먼저 암호키의 중복 문자열을 제거하고 5 X 5 정사각형에 배열한 후, 나머지 알파벳을 차례대로 넣습니다.<br>"
